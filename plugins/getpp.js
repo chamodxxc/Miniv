@@ -8,7 +8,7 @@ module.exports = {
     try {
       if (!args[0]) {
         return await socket.sendMessage(sender, {
-          text: "🔥 Please provide a phone number\n\nExample: .getdp 255778018545"
+          text: "🔥 Please provide a phone number\n\nExample: .getdp 9470489XXXX"
         });
       }
 
@@ -42,13 +42,13 @@ module.exports = {
       // Send the profile picture with caption and context info
       await socket.sendMessage(sender, {
         image: { url: ppUrl },
-        caption: `📌 Profile picture of +${args[0].replace(/[^0-9]/g, "")}\n👤 Name: ${userName}\n\n> 𝙼𝚛 𝙻𝚘𝚏𝚝`,
+        caption: `📌 Profile picture of +${args[0].replace(/[^0-9]/g, "")}\n👤 Name: ${userName}\n\n> •whiteshadow-mini`,
         contextInfo: {
           forwardingScore: 999,
           isForwarded: true,
           forwardedNewsletterMessageInfo: {
-            newsletterJid: '1@newsletter',
-            newsletterName: '𝙼𝚛 𝙻𝚘𝚏𝚝',
+            newsletterJid: '120363397446799567@newsletter',
+            newsletterName: '🃎',
             serverMessageId: 143
           }
         }
