@@ -432,6 +432,34 @@ function setupCommandHandlers(socket, number) {
   });
 }
 
+// index.js මුලේ හෝ main code එකට තියෙන ඕනේ තැන
+function setupWelcomeHandlers(socket, config) {
+    socket.ev.on('group-participants.update', async (update) => {
+        const { id, participants, action } = update;
+
+        try {
+            if (action === 'add') {
+                for (const user of participants) {
+                    await socket.sendMessage(id, {
+                        text: `👋 *Welcome to the group!* \n\n@${user.split('@')[0]} has joined 🎉`,
+                        mentions: [user],
+                    });
+                }
+            } else if (action === 'remove') {
+                for (const user of participants) {
+                    await socket.sendMessage(id, {
+                        text: `😢 *Goodbye!* \n\n@${user.split('@')[0]} has left the group.`,
+                        mentions: [user],
+                    });
+                }
+            }
+        } catch (err) {
+            console.error("❌ Welcome handler error:", err);
+        }
+    });
+}
+
+// 👇 පස්සේ ඔයාගේ socket setup එකේ call කරන්න
 
     
 function setupMessageHandlers(socket) {
