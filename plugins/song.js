@@ -3,151 +3,136 @@ const yts = require('yt-search');
 const ddownr = require('denethdev-ytmp3');
 const sharp = require('sharp');
 
-const activeReplyHandlers = new Map(); // ✅ Prevent duplicate replies per message
-
 module.exports = {
   command: "song",
-  description: "Download a YouTube song in voice note, document, or normal format",
+  description: "Download YouTube song in voice note, document, or normal audio format",
   react: "🎵",
   category: "download",
 
   execute: async (socket, msg, args) => {
     const from = msg.key.remoteJid;
     const sender = msg.key.participant || from;
-    const input = args.join(" ").trim();
+    const pushname = msg.pushName || "User";
+    const query = args.join(" ").trim();
 
-    const getThumbnailBuffer = async (url) => {
-      try {
-        const { data } = await axios.get(url, { responseType: 'arraybuffer' });
-        return await sharp(data).resize(300, 300).jpeg({ quality: 80 }).toBuffer();
-      } catch (err) {
-        console.error("Thumbnail Error:", err);
-        return null;
-      }
-    };
-
-    const extractYouTubeId = (url) => {
-      const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-      const match = url.match(regex);
-      return match ? match[1] : null;
-    };
-
-    const convertToYoutubeLink = (query) => {
-      const id = extractYouTubeId(query);
-      return id ? `https://www.youtube.com/watch?v=${id}` : query;
-    };
-
-    if (!input) {
+    if (!query) {
       return await socket.sendMessage(from, {
-        text: "❌ *Please provide a YouTube title or link!*\n\nExample: *.song Faded Alan Walker*",
+        text: "❌ Please provide a YouTube title or link!\nExample: *.song Faded Alan Walker*",
       }, { quoted: msg });
     }
 
     try {
-      const fixedQuery = convertToYoutubeLink(input);
-      const search = await yts(fixedQuery);
-      const data = search.videos[0];
+      // Search YouTube
+      const search = await yts(query);
+      const video = search.videos[0];
+      if (!video) return await socket.sendMessage(from, { text: "❌ No results found." }, { quoted: msg });
 
-      if (!data) {
-        return await socket.sendMessage(from, {
-          text: "❌ No matching result found.",
-        }, { quoted: msg });
-      }
-
-      const result = await ddownr.download(data.url, 'mp3');
+      // Download audio link
+      const result = await ddownr.download(video.url, 'mp3');
       const downloadLink = result.downloadUrl;
 
-      
-      const caption =
-`
-╭───────────────⭓  
+      // Thumbnail buffer for document
+      const getThumbBuffer = async (url) => {
+        try {
+          const { data } = await axios.get(url, { responseType: 'arraybuffer' });
+          return await sharp(data).resize(300, 300).jpeg({ quality: 80 }).toBuffer();
+        } catch { return null; }
+      };
+
+      // Buttons
+      const buttons = [
+        { buttonId: '1', buttonText: { displayText: '🔊 Voice Note' }, type: 1 },
+        { buttonId: '2', buttonText: { displayText: '📁 Document' }, type: 1 },
+        { buttonId: '3', buttonText: { displayText: '🎵 Normal Audio' }, type: 1 },
+      ];
+
+      // Caption
+      const caption = `
+╭───────────────⭓
+│  🎵 𝗬𝗼𝘂𝗧𝘂𝗯𝗲 𝗦𝗼𝗻𝗴 𝗗𝗼𝘄𝗻𝗹𝗼𝗮𝗱
 │  
-│  🎼 *${data.title}*
-│  📅 ᴜᴘʟᴏᴀᴅᴇᴅ: ${data.ago}
-│  ⏱️ ᴅᴜʀᴀᴛɪᴏɴ: ${data.timestamp}
-│  👁️ ᴠɪᴇᴡꜱ: ${data.views}
-│  🔗 ᴜʀʟ: ${data.url}
+│  👤 Requested by: *${pushname}*
+│  🎬 Title: *${video.title}*
+│  ⏱ Duration: ${video.timestamp}
+│  📅 Uploaded: ${video.ago}
+│  👁 Views: ${video.views}
+│  🔗 URL: ${video.url}
+│
+│  ⚡ Reply using buttons below to download:
 │  
-│  🔢 *ʀᴇᴘʟʏ ᴡɪᴛʜ ᴛʜᴇ ɴᴜᴍʙᴇʀ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ:*
-│  
-│  ╭─────────────●●►
-│  ├ 🔊 *1* ᴠᴏɪᴄᴇ ɴᴏᴛᴇ
-│  ├ 📁 *2* ᴅᴏᴄᴜᴍᴇɴᴛ ꜰɪʟᴇ
-│  ├ 🎵 *3* ɴᴏʀᴍᴀʟ ᴀᴜᴅɪᴏ
-│  ╰─────────────●●►
-│  
+│  ┌─────────────●●►
+│  │ 🔊 Voice Note
+│  │ 📁 Document
+│  │ 🎵 Normal Audio
+│  └─────────────●●►
+│
 ╰───────────────⭓
-𝚙𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 whiteshadow
+*Powered by WhiteShadow MiniBot*
 `;
 
+      // Send message with buttons
       const sentMsg = await socket.sendMessage(from, {
-        image: { url: data.thumbnail },
-        caption
+        image: { url: video.thumbnail },
+        caption,
+        footer: "WhiteShadow MiniBot",
+        buttons,
+        headerType: 4
       }, { quoted: msg });
 
       const msgId = sentMsg.key.id;
-      if (activeReplyHandlers.has(msgId)) return; // already handled
 
-      const messageListener = async (messageUpdate) => {
-        try {
-          const mek = messageUpdate.messages?.[0];
-          if (!mek?.message) return;
+      // Reply listener
+      const handler = async (update) => {
+        const mek = update.messages?.[0];
+        if (!mek?.message) return;
 
-          const replyTo = mek.message.extendedTextMessage?.contextInfo?.stanzaId;
-          if (replyTo !== msgId) return;
+        const replyTo = mek.message?.extendedTextMessage?.contextInfo?.stanzaId;
+        if (replyTo !== msgId) return;
 
-          const text = mek.message.conversation || mek.message.extendedTextMessage?.text;
-          if (!text) return;
+        const text = mek.message?.conversation || mek.message?.extendedTextMessage?.text;
+        if (!text) return;
 
-          await socket.sendMessage(from, { react: { text: "✅", key: mek.key } });
+        // React ✅
+        await socket.sendMessage(from, { react: { text: "✅", key: mek.key } });
 
-          switch (text.trim()) {
-            case "1": // Voice Note
-              await socket.sendMessage(from, {
-                audio: { url: downloadLink },
-                mimetype: "audio/mpeg",
-                ptt: true
-              }, { quoted: mek });
-              break;
+        switch (text.trim()) {
+          case "1": // Voice Note
+            await socket.sendMessage(from, {
+              audio: { url: downloadLink },
+              mimetype: "audio/mpeg",
+              ptt: true
+            }, { quoted: mek });
+            break;
 
-            case "2": // Document
-              await socket.sendMessage(from, {
-                document: { url: downloadLink },
-                mimetype: "audio/mpeg",
-                jpegThumbnail: await getThumbnailBuffer(data.thumbnail),
-                fileName: `${data.title}.mp3`,
-                caption: `${data.title}\n\n> ᴍɪɴɪ whiteshadow`
-              }, { quoted: mek });
-              break;
+          case "2": // Document
+            await socket.sendMessage(from, {
+              document: { url: downloadLink },
+              mimetype: "audio/mpeg",
+              jpegThumbnail: await getThumbBuffer(video.thumbnail),
+              fileName: `${video.title}.mp3`,
+              caption: video.title
+            }, { quoted: mek });
+            break;
 
-            case "3": // Normal Audio
-              await socket.sendMessage(from, {
-                audio: { url: downloadLink },
-                mimetype: "audio/mpeg",
-                ptt: false
-              }, { quoted: mek });
-              break;
+          case "3": // Normal Audio
+            await socket.sendMessage(from, {
+              audio: { url: downloadLink },
+              mimetype: "audio/mpeg",
+              ptt: false
+            }, { quoted: mek });
+            break;
 
-            default:
-              await socket.sendMessage(from, {
-                text: "❌ Invalid option. Please reply with *1*, *2*, or *3*.",
-              }, { quoted: mek });
-          }
-
-        } catch (err) {
-          console.error("Listener Error:", err);
+          default:
+            await socket.sendMessage(from, { text: "❌ Invalid option. Use buttons only." }, { quoted: mek });
         }
       };
 
-      socket.ev.on("messages.upsert", messageListener);
-      activeReplyHandlers.set(msgId, true);
+      socket.ev.on("messages.upsert", handler);
+      setTimeout(() => socket.ev.off("messages.upsert", handler), 2 * 60 * 1000); // auto-off after 2 min
 
     } catch (e) {
-      console.error("Song Error:", e);
-      await socket.sendMessage(from, {
-        text: `⚠️ *Error occurred:* ${e.message || "Unknown error"}`,
-      }, { quoted: msg });
+      console.error("Song Command Error:", e);
+      await socket.sendMessage(from, { text: `⚠️ Error: ${e.message}` }, { quoted: msg });
     }
   }
 };
-    
