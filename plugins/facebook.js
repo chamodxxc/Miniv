@@ -27,10 +27,6 @@ module.exports = {
       }
 
       const api = await axios.get(`https://api.siputzx.my.id/api/d/facebook?url=${encodeURIComponent(url)}`);
-
-      // Debugging log (optional)
-      console.log("Full API response:", JSON.stringify(api.data, null, 2));
-
       if (!api.data.status || !api.data.data) {
         return await socket.sendMessage(from, {
           text: "❌ Failed to fetch video data. Please try again later or check your URL.",
@@ -38,7 +34,6 @@ module.exports = {
       }
 
       const data = api.data.data;
-
       if (!data.urls || !Array.isArray(data.urls) || data.urls.length === 0) {
         return await socket.sendMessage(from, {
           text: "❌ No downloadable video URLs found. The video may be private or unavailable.",
@@ -47,7 +42,6 @@ module.exports = {
 
       const hdVideo = data.urls[0];
       const sdVideo = data.urls[1] || null;
-
       const title = data.title || "N/A";
       const duration = formatDuration(data.duration);
       const comments = data.comments ?? "N/A";
@@ -55,30 +49,26 @@ module.exports = {
       const views = data.views ?? "N/A";
 
       const caption =
-`
-╭───────────────⭓
-│  👤 ʀᴇQᴜᴇꜱᴛᴇᴅ ʙʏ: ${pushname}
-│  🎬 ᴛɪᴛʟᴇ: ${title}
-│  ⏱️ ᴅᴜʀᴀᴛɪᴏɴ: ${duration}
-│  👁️ ᴠɪᴇᴡꜱ: ${views}
-│  ❤️ ʀᴇᴀᴄᴛɪᴏɴꜱ: ${reactions}
-│  💬 ᴄᴏᴍᴍᴇɴᴛꜱ: ${comments}
-│  🔗 ꜱᴏᴜʀᴄᴇ: ${url}
+`╭───────────────⭓
+│  👤 Requested by: ${pushname}
+│  🎬 Title: ${title}
+│  ⏱ Duration: ${duration}
+│  👁️ Views: ${views}
+│  ❤️ Reactions: ${reactions}
+│  💬 Comments: ${comments}
+│  🔗 Source: ${url}
 │  
-│  🔢 *ʀᴇᴘʟʏ ᴡɪᴛʜ ᴛʜᴇ ɴᴜᴍʙᴇʀ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ:*
-│  
+│  🔢 Reply with the number to download:
 │  ╭─────────────●●►
-│  ├ 🎞️ *1* ʜᴅ Qᴜᴀʟɪᴛʏ ᴠɪᴅᴇᴏ
-│  ├ 📼 *2* ꜱᴅ Qᴜᴀʟɪᴛʏ ᴠɪᴅᴇᴏ
-│  ├ 🎧 *3* ᴀᴜᴅɪᴏ ᴏɴʟʏ (ᴜɴᴀᴠᴀɪʟᴀʙʟᴇ)
+│  ├ 🎞️ 1 HD Video
+│  ├ 📼 2 SD Video
+│  ├ 🎧 3 Audio Only (Unavailable)
 │  ╰─────────────●●►
-│  
-│  ⚠️ *ɴᴏᴛᴇ:* ᴀᴜᴅɪᴏ ᴏɴʟʏ ᴏᴘᴛɪᴏɴ ɪꜱ ᴄᴜʀʀᴇɴᴛʟʏ ᴜɴᴀᴠᴀɪʟᴀʙʟᴇ ꜰᴏʀ ꜰᴀᴄᴇʙᴏᴏᴋ ᴠɪᴅᴇᴏꜱ.
-│  
+│  ⚠️ Note: Audio-only option is currently unavailable for Facebook videos.
 ╰───────────────⭓
-● 𝙼𝚛 𝙻𝚘𝚏𝚝 ●`;
+● WhiteShadow MiniBot ●`;
 
-      const previewUrl = "https://files.catbox.moe/deeo6l.jpg";
+      const previewUrl = "https://files.catbox.moe/fyr37r.jpg";
 
       const sentMsg = await socket.sendMessage(from, {
         image: { url: previewUrl },
@@ -87,14 +77,14 @@ module.exports = {
 
       const msgId = sentMsg.key.id;
 
-      const messageListener = async (messageUpdate) => {
+      // Listener for reply
+      const messageListener = async (update) => {
         try {
-          const mek = messageUpdate.messages[0];
+          const mek = update.messages[0];
           if (!mek.message) return;
 
           const isReply = mek.message.extendedTextMessage?.contextInfo?.stanzaId === msgId;
-          if (!isReply) return;
-          if (mek.key.remoteJid !== from) return;
+          if (!isReply || mek.key.remoteJid !== from) return;
 
           const text = mek.message.conversation || mek.message.extendedTextMessage?.text;
           await socket.sendMessage(from, { react: { text: '✅', key: mek.key } });
@@ -104,7 +94,7 @@ module.exports = {
               if (!hdVideo) return socket.sendMessage(from, { text: "❌ HD video not available." }, { quoted: mek });
               await socket.sendMessage(from, {
                 video: { url: hdVideo },
-                caption: "✅ *Facebook Video (HD)*\n> Vajira Mini Bot"
+                caption: "✅ *Facebook Video (HD)*\n> WhiteShadow MiniBot"
               }, { quoted: mek });
               break;
 
@@ -112,7 +102,7 @@ module.exports = {
               if (!sdVideo) return socket.sendMessage(from, { text: "❌ SD video not available." }, { quoted: mek });
               await socket.sendMessage(from, {
                 video: { url: sdVideo },
-                caption: "📼 *Facebook Video (SD)*\n> Vajira Mini Bot"
+                caption: "📼 *Facebook Video (SD)*\n> WhiteShadow MiniBot"
               }, { quoted: mek });
               break;
 
@@ -133,17 +123,15 @@ module.exports = {
       };
 
       socket.ev.on("messages.upsert", messageListener);
-
       setTimeout(() => {
         socket.ev.off("messages.upsert", messageListener);
-      }, 2 * 60 * 1000);
+      }, 2 * 60 * 1000); // 2 min timeout for reply
 
     } catch (e) {
       console.error("Main error:", e);
       await socket.sendMessage(msg.key.remoteJid, {
-        text: `⚠️ *Error occurred:* ${e.message}`,
+        text: `⚠️ Error occurred: ${e.message}`,
       }, { quoted: msg });
     }
   }
 };
-                  
