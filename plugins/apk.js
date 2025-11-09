@@ -46,7 +46,7 @@ module.exports = {
 │  📏 ꜱɪᴢᴇ: ${data.size}
 │  🔗 ᴅᴏᴡɴʟᴏᴀᴅ ʟɪɴᴋ ʙᴇʟᴏᴡ ⬇️
 ╰───────────────⭓
-> 𝚙𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝚒𝚛 𝙻𝙾𝙵𝚃`;
+> 𝙿𝙾𝚆𝙴𝚁𝙴𝙳 𝙱𝚈 𝚆𝙷𝙸𝚃𝙴𝚂𝙷𝙰𝙳𝙾𝚆-𝙼𝙳`;
       
       if (data.icon) {
         await socket.sendMessage(sender, {
