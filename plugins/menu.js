@@ -2,132 +2,70 @@ const config = require('../config');
 
 module.exports = {
   command: "menu",
-  description: "Bot commands.",
+  description: "Show bot command list with buttons",
   react: "🔰",
   category: "main",
-  execute: async (socket, msg, args, number) => {
+
+  execute: async (socket, msg, args) => {
     try {
       const from = msg.key.remoteJid;
       const sender = msg.key.participant || from;
       const pushname = msg.pushName || "there";
 
-       
       const menumsg = `
-╭▰☭ *𝙻𝚘𝚏𝚝 𝙵𝚛𝚎𝚎 𝙱𝚘𝚝* ☭▰╮
-✖ 🔰 *ʙᴏᴛ ɴᴀᴍᴇ:* 𝙻𝚘𝚏𝚝 𝚀𝚞𝚊𝚗𝚝𝚞𝚖
-✖ 🔰 *ᴏᴡɴᴇʀ:* 𝚂𝚒𝚛 𝙻𝙾𝙵𝚃
-✖ 🔰 *ᴠᴇʀꜱɪᴏɴ:* 𝚕𝚊𝚝𝚎𝚜𝚝 𝚀𝚞𝚊𝚗𝚝𝚞𝚖
-✖ 🔰 *ᴘʟᴀᴛꜰᴏʀᴍ:* 𝚀𝚞𝚊𝚗𝚝𝚞𝚖 (𝙻𝚒𝚗𝚞𝚡 𝟸𝟸.𝟶𝟺)
-✖ 🔰 *USER*: ${pushname}*
-✖ 🔰 *JID*: @${sender.split("@")[0]}*
-✖ 🔰 *PREFiX*: ${config.PREFIX}*
+╭▰☭ *WhiteShadow MiniBot* ☭▰╮
+✖ 🔰 *BOT NAME:* WhiteShadow MiniBot
+✖ 🔰 *OWNER:* WHITESHADOW 
+✖ 🔰 *VERSION:* v1.0
+✖ 🔰 *USER:* ${pushname}
+✖ 🔰 *JID:* @${sender.split("@")[0]}
+✖ 🔰 *PREFIX:* ${config.PREFIX}
 ━━━━━━━━━━━━━━━━━━━
-✆ 𝚆𝚎𝚕𝚕𝚌𝚘𝚖𝚎 𝚝𝚘 🔰𝚀𝚄𝙰𝙽𝚃𝚄𝙼
-✆ 𝚃𝚑𝚊𝚗𝚔𝚜 𝚏𝚘𝚛 𝚌𝚑𝚘𝚘𝚜𝚒𝚗𝚐 𝚞𝚜
+✆ Welcome to WhiteShadow MiniBot!
+✆ Use the buttons below to navigate commands.
 
-*╭━━☭  𝙶𝙴𝙽𝙴𝚁𝙰𝙻 ☭━━┈⊷*
-*┃☭│ • 𝙰𝙻𝙸𝚅𝙴*
-*┃☭│ • 𝙿𝙸𝙽𝙶*
-*┃☭│ • 𝚂𝚈𝚂𝚃𝙴𝙼*
-*┃☭│ • 𝚂𝚄𝙿𝙿𝙾𝚁𝚃*
-*┃☭│ • 𝙾𝚆𝙽𝙴𝚁*
-*┃☭│ • 𝙿𝙰𝙸𝚁*
-*┃☭│ • 𝙼𝙴𝙽𝚄*
-*┃☭│ • 𝙳𝙴𝚅𝙾𝙻𝟶𝙿𝙲𝙾𝚄𝙽𝚃*
-*┃☭│ • 𝙵𝙾𝚁𝚆𝙰𝚁𝙳*
-*┃☭│ • 𝙻𝙸𝚂𝚃*
-*┃☭│ • 𝙶𝚁𝙾𝚄𝙿𝙻𝙸𝙽𝙺*
-*╰━━━━━━━━━━━━━━━┈⊷*
+*╭━━ GENERAL ☭━━┈⊷*
+*┃• ALIVE* • PING* • SYSTEM* • SUPPORT* • OWNER* • PAIR* • MENU*
+*╰━━━━━━━━━━━━━┈⊷*
 
-*╭━━☭  𝙳𝙾𝚆𝙽𝙻𝙾𝙰𝙳 ☭━━┈⊷*
-*┃☭│ • 𝚂𝙾𝙽𝙶*
-*┃☭│ • 𝚅𝙸𝙳𝙴𝙾*
-*┃☭│ • 𝚃𝙸𝙺𝚃𝙾𝙺*
-*┃☭│ • 𝙵𝙰𝙲𝙴𝙱𝙾𝙾𝙺*
-*┃☭│ • 𝙰𝙿𝙺*
-*┃☭│ • 𝙸𝙼𝙶*
-*┃☭│ • 𝚂𝙻𝙰𝙽𝙸𝙼𝙴𝙲𝙻𝚄𝙱*
-*┃☭│ • 𝙶𝙰𝙼𝙴𝙳𝙻*
-*╰━━━━━━━━━━━━━━━┈⊷*
+*╭━━ DOWNLOAD ☭━━┈⊷*
+*┃• SONG* • VIDEO* • TIKTOK* • FACEBOOK* • APK* • IMG*
+*╰━━━━━━━━━━━━━┈⊷*
 
-*╭━━☭ 𝚂𝙴𝙰𝚁𝙲𝙷 ☭━━┈⊷*
-*┃☭│ • 𝚃𝙼𝙳𝙱*
-*┃☭│ • 𝙽𝙴𝚆𝚂*
-*┃☭│ • 𝙽𝙿𝙼*
-*┃☭│ • 𝙵𝙸𝚃𝙶𝙸𝚁𝙻*
-*┃☭│ • 𝙸𝙼𝙶*
-*┃☭│ • 𝙼𝙾𝚅𝙸𝙴𝙳𝙱*
-*┃☭│ • 𝚁𝙰𝙽𝙳𝙾𝙼𝙸𝙼𝙰𝙶𝙴*
-*┃☭│ • 𝙲𝙰𝚃*
-*╰━━━━━━━━━━━━━━━┈⊷*
+*╭━━ SEARCH ☭━━┈⊷*
+*┃• TMDB* • NEWS* • NPM* • FITGIRL* • IMG* • MOVIEDB* • RANDOMIMAGE* • CAT*
+*╰━━━━━━━━━━━━━┈⊷*
 
-*╭━━☭  𝙾𝚆𝙽𝙴𝚁 ☭━━┈⊷*
-*┃☭│ • 𝙱𝙻𝙾𝙲𝙺*
-*┃☭│ • 𝚄𝙽𝙱𝙻𝙾𝙲𝙺*
-*┃☭│ • 𝙳𝙴𝙻𝙴𝚃𝙴*
-*┃☭│ • 𝙻𝙴𝙰𝚅𝙴*
-*┃☭│ • 𝙰𝙳𝚂*
-*┃☭│ • 𝚅𝚅*
-*┃☭│ • 𝙹𝙾𝙸𝙽*
-*┃☭│ • 𝙲𝙾𝙽𝚃𝙰𝙲𝚃𝙻𝙸𝚂𝚃*
-*┃☭│ • 𝚁𝚄𝙽*
-*┃☭│ • 𝙲𝙾𝙳𝙴𝙰𝙳𝙳*
-*┃☭│ • 𝙴𝙳𝙸𝙳*
-*╰━━━━━━━━━━━━━━━┈⊷*
+*╭━━ OWNER ☭━━┈⊷*
+*┃• BLOCK* • UNBLOCK* • DELETE* • LEAVE* • ADS* • VV* • JOIN* • CONTACTLIST* • RUN* • CODEADD* • EDIT*
+*╰━━━━━━━━━━━━━┈⊷*
 
-*╭━━☭  𝙶𝚁𝙾𝚄𝙿 ☭━━┈⊷*
-*┃☭│ • 𝙹𝙾𝙸𝙽*
-*┃☭│ • 𝙻𝙴𝙰𝚅𝙴*
-*┃☭│ • 𝙱𝙲*
-*┃☭│ • 𝙷𝙸𝙳𝙴𝚃𝙰𝙶*
-*┃☭│ • 𝚆𝙴𝙻𝙲𝙾𝙼𝙴*
-*┃☭│ • 𝙼𝚄𝚃𝙴*
-*┃☭│ • 𝚄𝙽𝙼𝚄𝚃𝙴*
-*┃☭│ • 𝙺𝙸𝙲𝙺*
-*┃☭│ • 𝙰𝙳𝙳*
-*┃☭│ • 𝚃𝙰𝙶𝙰𝙻𝙻*
-*┃☭│ • 𝙿𝚁𝙾𝙼𝙾𝚃𝙴*
-*┃☭│ • 𝙳𝙴𝙼𝙾𝚃𝙴*
-*┃☭│ • 𝙶𝙽𝙰𝙼𝙴*
-*┃☭│ • 𝙶𝙳𝙴𝚂𝙲*
-*╰━━━━━━━━━━━━━━━┈⊷*
+*╭━━ GROUP ☭━━┈⊷*
+*┃• JOIN* • LEAVE* • BC* • HIDETAG* • WELCOME* • MUTE* • UNMUTE* • KICK* • ADD* • TAGALL* • PROMOTE* • DEMOTE* • GNAME* • GDESC*
+*╰━━━━━━━━━━━━━┈⊷*
 
-*╭━━☭  𝙾𝚃𝙷𝙴𝚁 ☭━━┈⊷*
-*┃☭│ • 𝙶𝙴𝚃𝙿𝙿*
-*┃☭│ • 𝙼𝙴𝚃𝙰*
-*┃☭│ • 𝚃𝙰𝙺𝙴*
-*┃☭│ • 𝚂𝚃𝙸𝙲𝙺𝙴𝚁*
-*┃☭│ • 𝚅𝙾𝙸𝙲𝙴𝙶𝙿𝚃*
-*┃☭│ • 𝙹𝙾𝙺𝙴*
-*┃☭│ • 𝚆𝙴𝙰𝚃𝙷𝙴𝚁*
-*┃☭│ • 𝚃𝚁𝙰𝙸𝙽*
-*┃☭│ • 𝙱𝚄𝚂*
-*┃☭│ • 𝚂𝚄𝙼𝙼𝙰𝚁𝚈*
-*┃☭│ • 𝙰𝙸𝚂𝚄𝙼𝙼𝙰𝚁𝚈*
-*┃☭│ • 𝚆𝙰𝙱𝙴𝚃𝙰*
-*┃☭│ • 𝚂𝙴𝙽𝙳𝚄𝙿𝙳𝙰𝚃𝙴*
-*┃☭│ • 𝙳𝙻*
-*┃☭│ • 𝚃𝙴𝚇𝚃𝙼*
-*┃☭│ • 𝙶𝙴𝚃𝙳𝙿*
-*┃☭│ • 𝙱𝙸𝚁𝚃𝙷𝙳𝙰𝚈*
-*┃☭│ • 𝚁𝙴𝙿𝙻𝚈*
-*┃☭│ • 𝚁𝙰𝙽𝙺*
-*╰━━━━━━━━━━━━━━━┈⊷*
-> *𝚙𝚘𝚠𝚎𝚛𝚎𝚍 𝚋𝚢 𝚂𝚒𝚛 𝙻𝙾𝙵𝚃*`;
+*╭━━ OTHER ☭━━┈⊷*
+*┃• GETPP* • META* • TAKE* • STICKER* • VOICEGPT* • JOKE* • WEATHER* • TRAIN* • BUS* • SUMMARY* • AISUMMARY* • WABETA* • SENDUPDATE* • DL* • TEXTM* • GETDP* • BIRTHDAY* • REPLY* • RANK*
+*╰━━━━━━━━━━━━━┈⊷*
+> *powered by WhiteShadow*`;
 
-      // Envoi du menu avec image et contextInfo stylisé
-      await socket.sendMessage(sender, {
-        image: { url: 'https://files.catbox.moe/deeo6l.jpg' },
+      const buttons = [
+        { buttonId: 'general', buttonText: { displayText: '📌 GENERAL' }, type: 1 },
+        { buttonId: 'download', buttonText: { displayText: '⬇️ DOWNLOAD' }, type: 1 },
+        { buttonId: 'search', buttonText: { displayText: '🔎 SEARCH' }, type: 1 },
+        { buttonId: 'owner', buttonText: { displayText: '👑 OWNER' }, type: 1 },
+      ];
+
+      await socket.sendMessage(from, {
+        image: { url: 'https://files.catbox.moe/fyr37r.jpg' },
         caption: menumsg,
+        footer: 'WhiteShadow MiniBot',
+        buttons,
+        headerType: 4,
         contextInfo: {
           mentionedJid: [sender],
           forwardingScore: 999,
           isForwarded: true,
-          forwardedNewsletterMessageInfo: {
-            newsletterJid: '1@newsletter',
-            newsletterName: '𝙼𝚛 𝙻𝚘𝚏𝚝',
-            serverMessageId: 143
-          }
         }
       }, { quoted: msg });
 
