@@ -1,19 +1,27 @@
+// routes/code.js
 const express = require('express');
 const router = express.Router();
 const { makeWASocket, useMultiFileAuthState } = require('@whiskeysockets/baileys');
-const config = require('../config');
-const fs = require('fs');
 const path = require('path');
+const fs = require('fs');
+const config = require('../config');
 
-const activeSockets = new Map();
 const SESSION_BASE_PATH = './session';
+const activeSockets = new Map();
 
 // Ensure session directory exists
 if (!fs.existsSync(SESSION_BASE_PATH)) {
     fs.mkdirSync(SESSION_BASE_PATH, { recursive: true });
 }
 
-// Utility function to setup message handlers
+// Utility: find command (replace with your actual commands)
+function findCommand(name) {
+    // Example structure
+    // return { function: async (socket, msg, opts) => { ... } }
+    return null;
+}
+
+// Setup message handlers
 function setupHandlers(socket, number) {
     socket.ev.on('messages.upsert', async ({ messages }) => {
         const msg = messages[0];
@@ -33,8 +41,8 @@ function setupHandlers(socket, number) {
                     quoted: msg,
                     reply: (text) => socket.sendMessage(msg.key.remoteJid, { text }, { quoted: msg })
                 });
-            } catch (error) {
-                console.error(`[${number}] Command error:`, error);
+            } catch (err) {
+                console.error(`[${number}] Command error:`, err);
             }
         }
     });
@@ -64,27 +72,21 @@ async function restoreSession(number) {
         });
 
         socket.ev.on('creds.update', saveCreds);
-    } catch (error) {
-        console.error(`❌ Failed to restore session for ${number}:`, error);
+    } catch (err) {
+        console.error(`❌ Failed to restore session for ${number}:`, err);
     }
 }
 
-// Main route
+// Main GET /code route
 router.get('/', async (req, res) => {
     const { number } = req.query;
     if (!number) return res.status(400).json({ error: 'Number parameter is required' });
 
-    // ✅ Immediately respond to avoid H12 timeout
-    res.status(200).json({ status: 'starting_session', number });
+    // ✅ Immediately respond to avoid H12
+    res.status(200).json({ status: 'session_starting', number });
 
-    // Start background session restore
+    // ✅ Start session restore in background
     restoreSession(number);
 });
 
 module.exports = router;
-
-// Dummy findCommand function, replace with your actual command lookup
-function findCommand(name) {
-    // Example: return { function: async (socket, msg, opts) => { ... } }
-    return null;
-}
