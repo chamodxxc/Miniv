@@ -1,138 +1,71 @@
-const axios = require('axios');
-const yts = require('yt-search');
-const ddownr = require('denethdev-ytmp3');
-const sharp = require('sharp');
+const fetch = require('node-fetch');
 
 module.exports = {
-  command: "song",
-  description: "Download YouTube song in voice note, document, or normal audio format",
-  react: "🎵",
+  command: 'song',
+  alias: ["play","mp3","audio","music","s","so","son","songs"],
+  description: "Download YouTube song (Audio) via Nekolabs API",
   category: "download",
+  react: "🎵",
+  usage: ".song <song name>",
 
   execute: async (socket, msg, args) => {
     const from = msg.key.remoteJid;
-    const sender = msg.key.participant || from;
-    const pushname = msg.pushName || "User";
-    const query = args.join(" ").trim();
+    const text = args.join(" ");
 
-    if (!query) {
+    if (!text) {
       return await socket.sendMessage(from, {
-        text: "❌ Please provide a YouTube title or link!\nExample: *.song Faded Alan Walker*",
+        text: `*🎧 Use this command properly!*\n\n*Example:* .song Shape of You\n\n_Then I'll download and send your requested audio ❤️_`
       }, { quoted: msg });
     }
 
     try {
-      // Search YouTube
-      const search = await yts(query);
-      const video = search.videos[0];
-      if (!video) return await socket.sendMessage(from, { text: "❌ No results found." }, { quoted: msg });
+      // 🔹 Nekolabs API Call
+      const apiUrl = `https://api.nekolabs.my.id/downloader/youtube/play/v1?q=${encodeURIComponent(text)}`;
+      const res = await fetch(apiUrl);
+      const data = await res.json();
 
-      // Download audio link
-      const result = await ddownr.download(video.url, 'mp3');
-      const downloadLink = result.downloadUrl;
+      if (!data?.success || !data?.result?.downloadUrl) {
+        return await socket.sendMessage(from, { text: "*😔 Song not found!*" }, { quoted: msg });
+      }
 
-      // Thumbnail buffer for document
-      const getThumbBuffer = async (url) => {
-        try {
-          const { data } = await axios.get(url, { responseType: 'arraybuffer' });
-          return await sharp(data).resize(300, 300).jpeg({ quality: 80 }).toBuffer();
-        } catch { return null; }
-      };
+      const meta = data.result.metadata;
+      const dlUrl = data.result.downloadUrl;
 
-      // Buttons
-      const buttons = [
-        { buttonId: '1', buttonText: { displayText: '🔊 Voice Note' }, type: 1 },
-        { buttonId: '2', buttonText: { displayText: '📁 Document' }, type: 1 },
-        { buttonId: '3', buttonText: { displayText: '🎵 Normal Audio' }, type: 1 },
-      ];
+      // 🔹 Fetch thumbnail
+      let buffer;
+      try {
+        const thumbRes = await fetch(meta.cover);
+        buffer = Buffer.from(await thumbRes.arrayBuffer());
+      } catch {
+        buffer = null;
+      }
 
-      // Caption
-      const caption = `
-╭───────────────⭓
-│  🎵 𝗬𝗼𝘂𝗧𝘂𝗯𝗲 𝗦𝗼𝗻𝗴 𝗗𝗼𝘄𝗻𝗹𝗼𝗮𝗱
-│  
-│  👤 Requested by: *${pushname}*
-│  🎬 Title: *${video.title}*
-│  ⏱ Duration: ${video.timestamp}
-│  📅 Uploaded: ${video.ago}
-│  👁 Views: ${video.views}
-│  🔗 URL: ${video.url}
-│
-│  ⚡ Reply using buttons below to download:
-│  
-│  ┌─────────────●●►
-│  │ 🔊 Voice Note
-│  │ 📁 Document
-│  │ 🎵 Normal Audio
-│  └─────────────●●►
-│
-╰───────────────⭓
-*Powered by WhiteShadow MiniBot*
-`;
+      // 🔹 Info Card
+      const caption = `╭───〔 *🎧 SONG INFO* 〕───⬤
+│ 🎵 *Title:* ${meta.title}
+│ 📺 *Channel:* ${meta.channel}
+│ ⏱️ *Duration:* ${meta.duration}
+│ 💾 *Quality:* 128kbps
+│ 🤖 *Bot:* 𝗪𝗛𝗜𝗧𝗘𝗦𝗛𝗔𝗗𝗢𝗪-𝗠𝗗
+╰───────────────────────────⬤`;
 
-      // Send message with buttons
-      const sentMsg = await socket.sendMessage(from, {
-        image: { url: video.thumbnail },
-        caption,
-        footer: "WhiteShadow MiniBot",
-        buttons,
-        headerType: 4
+      // 🖼️ Send thumbnail
+      if (buffer) {
+        await socket.sendMessage(from, { image: buffer, caption }, { quoted: msg });
+      } else {
+        await socket.sendMessage(from, { text: caption }, { quoted: msg });
+      }
+
+      // 🎧 Send MP3
+      await socket.sendMessage(from, {
+        audio: { url: dlUrl },
+        mimetype: "audio/mpeg",
+        fileName: `${meta.title.replace(/[\\/:*?"<>|]/g, "").slice(0, 80)}.mp3`
       }, { quoted: msg });
 
-      const msgId = sentMsg.key.id;
-
-      // Reply listener
-      const handler = async (update) => {
-        const mek = update.messages?.[0];
-        if (!mek?.message) return;
-
-        const replyTo = mek.message?.extendedTextMessage?.contextInfo?.stanzaId;
-        if (replyTo !== msgId) return;
-
-        const text = mek.message?.conversation || mek.message?.extendedTextMessage?.text;
-        if (!text) return;
-
-        // React ✅
-        await socket.sendMessage(from, { react: { text: "✅", key: mek.key } });
-
-        switch (text.trim()) {
-          case "1": // Voice Note
-            await socket.sendMessage(from, {
-              audio: { url: downloadLink },
-              mimetype: "audio/mpeg",
-              ptt: true
-            }, { quoted: mek });
-            break;
-
-          case "2": // Document
-            await socket.sendMessage(from, {
-              document: { url: downloadLink },
-              mimetype: "audio/mpeg",
-              jpegThumbnail: await getThumbBuffer(video.thumbnail),
-              fileName: `${video.title}.mp3`,
-              caption: video.title
-            }, { quoted: mek });
-            break;
-
-          case "3": // Normal Audio
-            await socket.sendMessage(from, {
-              audio: { url: downloadLink },
-              mimetype: "audio/mpeg",
-              ptt: false
-            }, { quoted: mek });
-            break;
-
-          default:
-            await socket.sendMessage(from, { text: "❌ Invalid option. Use buttons only." }, { quoted: mek });
-        }
-      };
-
-      socket.ev.on("messages.upsert", handler);
-      setTimeout(() => socket.ev.off("messages.upsert", handler), 2 * 60 * 1000); // auto-off after 2 min
-
-    } catch (e) {
-      console.error("Song Command Error:", e);
-      await socket.sendMessage(from, { text: `⚠️ Error: ${e.message}` }, { quoted: msg });
+    } catch (err) {
+      console.error("Audio download error:", err);
+      await socket.sendMessage(from, { text: "*❌ Error: Please try again later!*" }, { quoted: msg });
     }
   }
 };
