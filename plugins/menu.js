@@ -12,6 +12,7 @@ module.exports = {
       const sender = msg.key.participant || from;
       const pushname = msg.pushName || "there";
 
+      // Full menu message
       const menumsg = `
 ╭▰☭ *WhiteShadow MiniBot* ☭▰╮
 ✖ 🔰 *BOT NAME:* WhiteShadow MiniBot
@@ -49,6 +50,7 @@ module.exports = {
 *╰━━━━━━━━━━━━━┈⊷*
 > *powered by WhiteShadow*`;
 
+      // Buttons for main menu
       const buttons = [
         { buttonId: 'general', buttonText: { displayText: '📌 GENERAL' }, type: 1 },
         { buttonId: 'download', buttonText: { displayText: '⬇️ DOWNLOAD' }, type: 1 },
@@ -56,6 +58,7 @@ module.exports = {
         { buttonId: 'owner', buttonText: { displayText: '👑 OWNER' }, type: 1 },
       ];
 
+      // Send full menu with buttons
       await socket.sendMessage(from, {
         image: { url: 'https://files.catbox.moe/fyr37r.jpg' },
         caption: menumsg,
@@ -68,6 +71,77 @@ module.exports = {
           isForwarded: true,
         }
       }, { quoted: msg });
+
+      // Button response listener
+      socket.ev.on('messages.upsert', async ({ messages }) => {
+        const buttonMsg = messages[0];
+        if (!buttonMsg.message) return;
+        if (!buttonMsg.message.buttonsResponseMessage) return;
+
+        const buttonId = buttonMsg.message.buttonsResponseMessage.selectedButtonId;
+
+        let submenu = '';
+
+        switch(buttonId) {
+          case 'general':
+            submenu = `
+╭━━ GENERAL COMMANDS ━━╮
+• ALIVE
+• PING
+• SYSTEM
+• SUPPORT
+• OWNER
+• PAIR
+• MENU
+╰━━━━━━━━━━━━━━╯`;
+            break;
+          case 'download':
+            submenu = `
+╭━━ DOWNLOAD COMMANDS ━━╮
+• SONG
+• VIDEO
+• TIKTOK
+• FACEBOOK
+• APK
+• IMG
+╰━━━━━━━━━━━━━━╯`;
+            break;
+          case 'search':
+            submenu = `
+╭━━ SEARCH COMMANDS ━━╮
+• TMDB
+• NEWS
+• NPM
+• FITGIRL
+• IMG
+• MOVIEDB
+• RANDOMIMAGE
+• CAT
+╰━━━━━━━━━━━━━━╯`;
+            break;
+          case 'owner':
+            submenu = `
+╭━━ OWNER COMMANDS ━━╮
+• BLOCK
+• UNBLOCK
+• DELETE
+• LEAVE
+• ADS
+• VV
+• JOIN
+• CONTACTLIST
+• RUN
+• CODEADD
+• EDIT
+╰━━━━━━━━━━━━━━╯`;
+            break;
+          default:
+            submenu = `❌ Unknown button: ${buttonId}`;
+        }
+
+        // Send submenu as reply (without the main menu image)
+        await socket.sendMessage(buttonMsg.key.remoteJid, { text: submenu }, { quoted: buttonMsg });
+      });
 
     } catch (e) {
       console.error(e);
