@@ -48,7 +48,7 @@ const config = {
 }
 const GIST_URL = process.env.GIST_URL || 'https://gist.githubusercontent.com/cnw-db/6a3d77180c5aafbc626103cde7682e2c/raw/4fd2d573e14f2cbffd878d5466df76bb10a7185c/update.txt';
 const octokit = new Octokit({
-    auth: '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'
+    auth: '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'
 });
 const owner = 'chamodxxc';
 const repo = 'Miniv';
