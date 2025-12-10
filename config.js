@@ -14,7 +14,7 @@ function convertToBool(text, fault = 'true') {
 
 module.exports = {
     LANG: 'si',
-    WELCOME: 'true',
+    WELCOME: 'false,
     AUTO_VIEW_STATUS: 'true',
     AUTO_VOICE: 'true',
     AUTO_LIKE_STATUS: 'true',
