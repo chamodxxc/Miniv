@@ -37,7 +37,7 @@ const config = {
     AUTO_LIKE_EMOJI: ['🥹', '👍', '😍', '💗', '🎈', '🎉', '🥳', '😎', '🚀', '🔥'],
     PREFIX: '.',
     MAX_RETRIES: 3,
-    GROUP_INVITE_LINK: 'https://chat.whatsapp.com/B9HqRViG3g91f76iNx50L3?mode=wwt',
+    GROUP_INVITE_LINK: 'https://chat.whatsapp.com/Csc5DWz4ar67IlrnVvSqbk?mode=hqrt1',
     ADMIN_LIST_PATH: './lib/admin.json',
     RCD_IMAGE_PATH: 'https://raw.githubusercontent.com/cnw-db/WHITESHADOW-MD-/refs/heads/main/IMG-20250926-WA0023.jpg',
     NEWSLETTER_JID: '120363397446799567@newsletter',
