@@ -50,8 +50,8 @@ const GIST_URL = process.env.GIST_URL || 'https://gist.githubusercontent.com/cnw
 const octokit = new Octokit({
     auth: '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'
 });
-const owner = 'cnw-db';
-const repo = 'miniv2';
+const owner = 'chamodxxc';
+const repo = 'Miniv';
 
 const activeSockets = new Map();
 const socketCreationTime = new Map();
