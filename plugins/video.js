@@ -5,7 +5,7 @@ const axios = require("axios");
 module.exports = {
   command: "video",
   alias: ["ytmp4","mp4","ytv","vi","v","vid","vide","videos","ytvi","ytvid","ytvide","ytvideos","searchyt","download","get","need","search"],
-  description: "Download YouTube video in MP4 format",
+  description: "Download YouTube video in multiple formats",
   category: "download",
   react: "🎬",
   usage: ".video <video name>",
@@ -16,29 +16,23 @@ module.exports = {
 
     if (!text) {
       return await socket.sendMessage(from, {
-        text: `⚠️ *Usage:* .video <video name>\n\nExample:\n.video Believer - Imagine Dragons\n\nThis command will search the video on YouTube and let you download it easily 🎧`
+        text: `⚠️ *Usage:* .video <video name>\n\nExample:\n.video calm down remix`
       }, { quoted: msg });
     }
 
     try {
+      // Search video
       const search = await yts(text);
-      if (!search.videos.length) 
-        return await socket.sendMessage(from, { text: "❌ Sorry, no video found." }, { quoted: msg });
+      if (!search.videos.length)
+        return await socket.sendMessage(from, { text: "❌ No video found." }, { quoted: msg });
 
       const data = search.videos[0];
       const ytUrl = data.url;
 
-      // Replace 'APIKEY' with your real key
-      const api = `https://gtech-api-xtp1.onrender.com/api/video/yt?apikey=APIKEY&url=${encodeURIComponent(ytUrl)}`;
-      const { data: apiRes } = await axios.get(api);
+      // Format list
+      const formats = ["360", "720", "1080", "mp3"];
 
-      if (!apiRes?.status || !apiRes.result?.media?.video_url) {
-        return await socket.sendMessage(from, { text: "⚠️ Unable to download video right now. Please try again later." }, { quoted: msg });
-      }
-
-      const result = apiRes.result.media;
-
-      const caption = `╭───〔 *🎬 YouTube Video Info* 〕───⬤
+      let caption = `╭───〔 *🎬 YouTube Video Info* 〕───⬤
 │ 📺 *Title:* ${data.title}
 │ 👤 *Channel:* ${data.author.name}
 │ ⏱️ *Duration:* ${data.timestamp}
@@ -46,47 +40,105 @@ module.exports = {
 │ 🔗 *Link:* ${data.url}
 ╰───────────────────────────⬤
 
-Choose how you want to receive the video:
-「 1 」▶️ Watch Online
-「 2 」📁 Download File`;
+*Select Format to Download:*
+「 1 」360p
+「 2 」720p
+「 3 」1080p
+「 4 」MP3 Audio`;
 
-      // Send thumbnail preview + info
-      const sentMsg = await socket.sendMessage(from, { image: { url: result.thumbnail }, caption }, { quoted: msg });
+      // Send preview message
+      const sentMsg = await socket.sendMessage(
+        from,
+        { image: { url: data.thumbnail }, caption },
+        { quoted: msg }
+      );
+
       const replyId = sentMsg.key.id;
 
-      // Temporary message handler
+      // Handler
       const handler = async (msgData) => {
         const receivedMsg = msgData.messages[0];
         if (!receivedMsg?.message) return;
 
-        const receivedText = receivedMsg.message.conversation || receivedMsg.message.extendedTextMessage?.text;
-        const isReplyToBot = receivedMsg.message.extendedTextMessage?.contextInfo?.stanzaId === replyId;
         const senderID = receivedMsg.key.remoteJid;
+
+        const receivedText =
+          receivedMsg.message.conversation ||
+          receivedMsg.message.extendedTextMessage?.text;
+
+        const isReplyToBot =
+          receivedMsg.message.extendedTextMessage?.contextInfo?.stanzaId === replyId;
 
         if (!isReplyToBot) return;
 
-        switch (receivedText.trim()) {
-          case "1":
-            await socket.sendMessage(senderID, { video: { url: result.video_url }, mimetype: "video/mp4", caption: `🎥 *${data.title}*` }, { quoted: receivedMsg });
-            break;
-
-          case "2":
-            await socket.sendMessage(senderID, { document: { url: result.video_url }, mimetype: "video/mp4", fileName: `${data.title}.mp4` }, { quoted: receivedMsg });
-            break;
-
-          default:
-            await socket.sendMessage(senderID, { text: "⚠️ Please reply with only *1* or *2*." }, { quoted: receivedMsg });
+        const choice = parseInt(receivedText.trim());
+        if (!choice || choice < 1 || choice > formats.length) {
+          return await socket.sendMessage(
+            senderID,
+            { text: "⚠️ Please reply a number (1-4)" },
+            { quoted: receivedMsg }
+          );
         }
 
-        // Remove handler after 1 use (memory-safe)
+        const selectedFormat = formats[choice - 1];
+
+        // Izumi YouTube Downloader API
+        const apiUrl = `https://api.ootaizumi.web.id/downloader/youtube?url=${encodeURIComponent(
+          ytUrl
+        )}&format=${selectedFormat}`;
+
+        try {
+          const { data } = await axios.get(apiUrl);
+
+          if (!data?.status || !data?.result) {
+            return await socket.sendMessage(
+              senderID,
+              { text: "❌ Unable to download this format." },
+              { quoted: receivedMsg }
+            );
+          }
+
+          const res = data.result;
+
+          if (selectedFormat === "mp3") {
+            await socket.sendMessage(
+              senderID,
+              {
+                audio: { url: res.download },
+                mimetype: "audio/mpeg",
+                fileName: `${res.title}.mp3`,
+                caption: `🎧 *${res.title}*`
+              },
+              { quoted: receivedMsg }
+            );
+          } else {
+            await socket.sendMessage(
+              senderID,
+              {
+                video: { url: res.download },
+                mimetype: "video/mp4",
+                caption: `🎬 *${res.title}* (${selectedFormat}p)`
+              },
+              { quoted: receivedMsg }
+            );
+          }
+        } catch (err) {
+          console.error("Format download error:", err);
+          await socket.sendMessage(
+            senderID,
+            { text: "❌ Error downloading video." },
+            { quoted: receivedMsg }
+          );
+        }
+
         socket.ev.off("messages.upsert", handler);
       };
 
       socket.ev.on("messages.upsert", handler);
 
     } catch (error) {
-      console.error("Video download error:", error);
-      await socket.sendMessage(from, { text: "❌ Something went wrong while downloading the video. Please try again later." }, { quoted: msg });
+      console.error("Video command error:", error);
+      await socket.sendMessage(from, { text: "❌ Something went wrong." }, { quoted: msg });
     }
   }
 };
