@@ -1,3 +1,4 @@
+
 const config = require('../config');
 
 module.exports = {
@@ -11,6 +12,25 @@ module.exports = {
       const from = msg.key.remoteJid;
       const sender = msg.key.participant || from;
       const pushname = msg.pushName || "there";
+
+      // Meta AI fake helper with your number
+      const fakeMeta = {
+        key: {
+          participant: `94704896880@s.whatsapp.net`, // ඔබේ number
+          remoteJid: from,
+          fromMe: false,
+          id: 'FAKE_META_menucmd'
+        },
+        message: {
+          contactMessage: {
+            displayName: 'Meta AI',
+            vcard: `BEGIN:VCARD\nVERSION:3.0\nN:Meta AI;;;;\nFN:Meta AI\nTEL;waid=94704896880:0704896880\nEND:VCARD`,
+            sendEphemeral: true
+          }
+        },
+        pushName: 'Meta AI',
+        messageTimestamp: Math.floor(Date.now() / 1000)
+      };
 
       // Full menu message
       const menumsg = `
@@ -70,7 +90,7 @@ module.exports = {
           forwardingScore: 999,
           isForwarded: true,
         }
-      }, { quoted: msg });
+      }, { quoted: fakeMeta });
 
       // Button response listener
       socket.ev.on('messages.upsert', async ({ messages }) => {
@@ -139,8 +159,8 @@ module.exports = {
             submenu = `❌ Unknown button: ${buttonId}`;
         }
 
-        // Send submenu as reply (without the main menu image)
-        await socket.sendMessage(buttonMsg.key.remoteJid, { text: submenu }, { quoted: buttonMsg });
+        // Send submenu as reply (Meta AI style)
+        await socket.sendMessage(buttonMsg.key.remoteJid, { text: submenu }, { quoted: fakeMeta });
       });
 
     } catch (e) {
