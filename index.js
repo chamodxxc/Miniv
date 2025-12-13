@@ -478,7 +478,7 @@ function setupWelcomeHandlers(socket, config) {
     }
 }
 
-module.exports = { setupWelcomeHandlers };
+
 // 👇 පස්සේ ඔයාගේ socket setup එකේ call කරන්න
 
     
