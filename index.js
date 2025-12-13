@@ -433,32 +433,52 @@ function setupCommandHandlers(socket, number) {
 }
 
 // index.js මුලේ හෝ main code එකට තියෙන ඕනේ තැන
-function setupWelcomeHandlers(socket, config) {
-    socket.ev.on('group-participants.update', async (update) => {
-        const { id, participants, action } = update;
 
-        try {
-            if (action === 'add') {
+function setupWelcomeHandlers(socket, config) {
+    if (config.WELCOME === 'true') {
+        socket.ev.on('group-participants.update', async (update) => {
+            const { id, participants, action } = update;
+
+            try {
                 for (const user of participants) {
-                    await socket.sendMessage(id, {
-                        text: `👋 *Welcome to the group!* \n\n@${user.split('@')[0]} has joined 🎉`,
-                        mentions: [user],
-                    });
+                    const userName = user.split('@')[0];
+
+                    if (action === 'add') {
+                        await socket.sendMessage(id, {
+                            image: { url: 'https://files.catbox.moe/bkufwo.jpg' },
+                            caption: `
+*✦───────────────✦*
+*👑 Welcome to ${id} 👑*
+
+*Hello *@${userName} 🎉*
+*Please read the group rules and enjoy your stay!*
+*✦───────────────✦*`,
+                            mentions: [user],
+                        });
+                    } else if (action === 'remove') {
+                        await socket.sendMessage(id, {
+                            image: { url: 'https://files.catbox.moe/bkufwo.jpg' },
+                            caption: `
+*✦───────────────✦*
+*Goodbye @${userName} 😢*
+
+*Take care! You are always welcome back.*
+*✦───────────────✦*`,
+                            mentions: [user],
+                        });
+                    }
+
+                    // Small delay to avoid flooding
+                    await new Promise(resolve => setTimeout(resolve, 1000));
                 }
-            } else if (action === 'remove') {
-                for (const user of participants) {
-                    await socket.sendMessage(id, {
-                        text: `😢 *Goodbye!* \n\n@${user.split('@')[0]} has left the group.`,
-                        mentions: [user],
-                    });
-                }
+            } catch (err) {
+                console.error("❌ Welcome handler error:", err);
             }
-        } catch (err) {
-            console.error("❌ Welcome handler error:", err);
-        }
-    });
+        });
+    }
 }
 
+module.exports = { setupWelcomeHandlers };
 // 👇 පස්සේ ඔයාගේ socket setup එකේ call කරන්න
 
     
