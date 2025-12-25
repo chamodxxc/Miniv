@@ -28,12 +28,12 @@ const {
 } = require('@whiskeysockets/baileys');
 
 const config = {
-   WELCOME: 'true',
+   WELCOME: 'false',
     AUTO_VIEW_STATUS: 'true',
     AUTO_VOICE: 'true',
     AUTO_LIKE_STATUS: 'true',
     AUTO_RECORDING: 'false',
-    HEROKU_APP_URL: 'https://bilal-md-deploy-1x.vercel.app/',
+    HEROKU_APP_URL: 'https://www.whiteshadow-md.zone.id',
     AUTO_LIKE_EMOJI: ['🥹', '👍', '😍', '💗', '🎈', '🎉', '🥳', '😎', '🚀', '🔥'],
     PREFIX: '.',
     MAX_RETRIES: 3,
