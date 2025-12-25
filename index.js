@@ -445,7 +445,7 @@ function setupWelcomeHandlers(socket, config) {
 
                     if (action === 'add') {
                         await socket.sendMessage(id, {
-                            image: { url: 'https://files.catbox.moe/bkufwo.jpg' },
+                            image: { url: 'https://raw.githubusercontent.com/cnw-db/WHITESHADOW-MD-/refs/heads/main/IMG-20250926-WA0024.jpg' },
                             caption: `
 *✦───────────────✦*
 *👑 Welcome to ${id} 👑*
@@ -457,7 +457,7 @@ function setupWelcomeHandlers(socket, config) {
                         });
                     } else if (action === 'remove') {
                         await socket.sendMessage(id, {
-                            image: { url: 'https://files.catbox.moe/bkufwo.jpg' },
+                            image: { url: 'https://raw.githubusercontent.com/cnw-db/WHITESHADOW-MD-/refs/heads/main/IMG-20250926-WA0024.jpg' },
                             caption: `
 *✦───────────────✦*
 *Goodbye @${userName} 😢*
